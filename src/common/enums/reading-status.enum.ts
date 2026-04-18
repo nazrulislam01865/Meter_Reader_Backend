@@ -1,4 +1,5 @@
 export enum ReadingStatus {
-  SUBMITTED = 'SUBMITTED',
   PENDING = 'PENDING',
+  VERIFIED = 'VERIFIED',
+  REJECTED = 'REJECTED',
 }
