@@ -22,10 +22,15 @@ let MeterReadingEntity = class MeterReadingEntity {
     meter;
     userId;
     user;
+    enteredByUserId;
+    enteredBy;
     readingValue;
+    previousReadingValue;
+    usageKwh;
     readingDate;
     source;
     status;
+    notes;
     imageUrl;
     createdAt;
     updatedAt;
@@ -58,6 +63,18 @@ __decorate([
     __metadata("design:type", user_entity_1.UserEntity)
 ], MeterReadingEntity.prototype, "user", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'entered_by_user_id', type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
+], MeterReadingEntity.prototype, "enteredByUserId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.UserEntity, (user) => user.enteredReadings, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'entered_by_user_id' }),
+    __metadata("design:type", Object)
+], MeterReadingEntity.prototype, "enteredBy", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'numeric',
         precision: 12,
@@ -66,6 +83,26 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], MeterReadingEntity.prototype, "readingValue", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'numeric',
+        precision: 12,
+        scale: 2,
+        nullable: true,
+        transformer: numeric_transformer_1.numericTransformer,
+    }),
+    __metadata("design:type", Object)
+], MeterReadingEntity.prototype, "previousReadingValue", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'numeric',
+        precision: 12,
+        scale: 2,
+        nullable: true,
+        transformer: numeric_transformer_1.numericTransformer,
+    }),
+    __metadata("design:type", Object)
+], MeterReadingEntity.prototype, "usageKwh", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'timestamp' }),
     __metadata("design:type", Date)
@@ -86,6 +123,10 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], MeterReadingEntity.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 500, nullable: true }),
+    __metadata("design:type", Object)
+], MeterReadingEntity.prototype, "notes", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)

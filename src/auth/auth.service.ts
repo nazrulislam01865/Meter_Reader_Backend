@@ -7,10 +7,19 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import type { StringValue } from 'ms';
 import { UserEntity } from '../users/entity/user.entity';
 import { UserStatus } from '../common/enums/user-status.enum';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { UserRole } from '../common/enums/user-role.enum';
+
+interface JwtPayload {
+  sub: string;
+  username: string;
+  role: UserRole;
+  status: UserStatus;
+}
 
 @Injectable()
 export class AuthService {
@@ -26,7 +35,7 @@ export class AuthService {
       .createQueryBuilder('user')
       .addSelect(['user.password', 'user.refreshTokenHash'])
       .where('LOWER(user.username) = LOWER(:username)', {
-        username: dto.username,
+        username: dto.username.trim(),
       })
       .andWhere('user.deletedAt IS NULL')
       .getOne();
@@ -39,9 +48,9 @@ export class AuthService {
       throw new UnauthorizedException('This account is not active');
     }
 
-    const passwordMatched = await bcrypt.compare(dto.password, user.password);
+    const matched = await bcrypt.compare(dto.password, user.password);
 
-    if (!passwordMatched) {
+    if (!matched) {
       throw new UnauthorizedException('Invalid username or password');
     }
 
@@ -51,14 +60,24 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async refreshTokens(
-    userId: string,
-    refreshToken: string,
-  ): Promise<AuthResponseDto> {
+  async refresh(refreshToken: string): Promise<AuthResponseDto> {
+    let payload: JwtPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+        secret: this.configService.get<string>(
+          'JWT_REFRESH_SECRET',
+          'dev-refresh-secret',
+        ),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
     const user = await this.userRepository
       .createQueryBuilder('user')
       .addSelect(['user.password', 'user.refreshTokenHash'])
-      .where('user.id = :userId', { userId })
+      .where('user.id = :id', { id: payload.sub })
       .andWhere('user.deletedAt IS NULL')
       .getOne();
 
@@ -66,10 +85,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const tokenMatched = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const matched = await bcrypt.compare(refreshToken, user.refreshTokenHash);
 
-    if (!tokenMatched) {
+    if (!matched) {
       throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('This account is not active');
     }
 
     return this.issueTokens(user);
@@ -80,10 +103,12 @@ export class AuthService {
       refreshTokenHash: null,
     });
 
-    return { message: 'Logged out successfully' };
+    return {
+      message: 'Logged out successfully',
+    };
   }
 
-  async getMe(userId: string) {
+  async me(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       select: {
@@ -92,11 +117,12 @@ export class AuthService {
         username: true,
         email: true,
         phone: true,
-        zoneId: true,
-        zoneName: true,
         role: true,
         status: true,
+        zoneId: true,
+        zoneName: true,
         passwordResetRequired: true,
+        lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -126,7 +152,7 @@ export class AuthService {
   }
 
   private async issueTokens(user: UserEntity): Promise<AuthResponseDto> {
-    const payload = {
+    const payload: JwtPayload = {
       sub: user.id,
       username: user.username,
       role: user.role,
@@ -138,7 +164,7 @@ export class AuthService {
         'JWT_ACCESS_SECRET',
         'dev-access-secret',
       ),
-      expiresIn: 15 * 60, // 15 minutes in seconds
+      expiresIn: this.getAccessTokenExpiry(),
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -146,7 +172,7 @@ export class AuthService {
         'JWT_REFRESH_SECRET',
         'dev-refresh-secret',
       ),
-      expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
+      expiresIn: this.getRefreshTokenExpiry(),
     });
 
     const refreshTokenHash = await bcrypt.hash(refreshToken, 12);
@@ -164,9 +190,20 @@ export class AuthService {
         username: user.username,
         email: user.email,
         role: user.role,
+        status: user.status,
         zoneName: user.zoneName ?? null,
         passwordResetRequired: user.passwordResetRequired,
       },
     };
+  }
+
+  private getAccessTokenExpiry(): StringValue {
+    return (this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') ??
+      '15m') as StringValue;
+  }
+
+  private getRefreshTokenExpiry(): StringValue {
+    return (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ??
+      '7d') as StringValue;
   }
 }

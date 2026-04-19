@@ -11,6 +11,9 @@ export declare class UserEntity {
     phone?: string | null;
     username: string;
     password: string;
+    refreshTokenHash?: string | null;
+    passwordResetRequired: boolean;
+    lastLoginAt?: Date | null;
     zoneId?: string | null;
     zoneName?: string | null;
     role: UserRole;
@@ -19,6 +22,8 @@ export declare class UserEntity {
     bills?: BillEntity[];
     payments?: PaymentEntity[];
     readings?: MeterReadingEntity[];
+    enteredReadings?: MeterReadingEntity[];
     createdAt: Date;
     updatedAt: Date;
+    deletedAt?: Date | null;
 }

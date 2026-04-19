@@ -12,7 +12,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthenticatedUser } from './interfaces/authenticated-user.interface';
 
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -23,15 +22,8 @@ export class AuthController {
   }
 
   @Post('refresh')
-  refresh(
-    @CurrentUser() _user: AuthenticatedUser,
-    @Body() dto: RefreshTokenDto,
-  ) {
-    const payload = JSON.parse(
-      Buffer.from(dto.refreshToken.split('.')[1], 'base64').toString('utf8'),
-    ) as { sub: string };
-
-    return this.authService.refreshTokens(payload.sub, dto.refreshToken);
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refresh(dto.refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,6 +35,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() user: AuthenticatedUser) {
-    return this.authService.getMe(user.sub);
+    return this.authService.me(user.sub);
   }
 }

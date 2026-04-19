@@ -8,6 +8,7 @@ export class AuthResponseDto {
     username: string;
     email: string;
     role: string;
+    status: string;
     zoneName: string | null;
     passwordResetRequired: boolean;
   };

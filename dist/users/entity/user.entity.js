@@ -24,6 +24,9 @@ let UserEntity = class UserEntity {
     phone;
     username;
     password;
+    refreshTokenHash;
+    passwordResetRequired;
+    lastLoginAt;
     zoneId;
     zoneName;
     role;
@@ -32,8 +35,10 @@ let UserEntity = class UserEntity {
     bills;
     payments;
     readings;
+    enteredReadings;
     createdAt;
     updatedAt;
+    deletedAt;
 };
 exports.UserEntity = UserEntity;
 __decorate([
@@ -57,9 +62,21 @@ __decorate([
     __metadata("design:type", String)
 ], UserEntity.prototype, "username", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, select: false }),
     __metadata("design:type", String)
 ], UserEntity.prototype, "password", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, nullable: true, select: false }),
+    __metadata("design:type", Object)
+], UserEntity.prototype, "refreshTokenHash", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "passwordResetRequired", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Object)
+], UserEntity.prototype, "lastLoginAt", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
@@ -101,6 +118,10 @@ __decorate([
     __metadata("design:type", Array)
 ], UserEntity.prototype, "readings", void 0);
 __decorate([
+    (0, typeorm_1.OneToMany)(() => meter_reading_entity_1.MeterReadingEntity, (reading) => reading.enteredBy),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "enteredReadings", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], UserEntity.prototype, "createdAt", void 0);
@@ -108,6 +129,10 @@ __decorate([
     (0, typeorm_1.UpdateDateColumn)(),
     __metadata("design:type", Date)
 ], UserEntity.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.DeleteDateColumn)(),
+    __metadata("design:type", Object)
+], UserEntity.prototype, "deletedAt", void 0);
 exports.UserEntity = UserEntity = __decorate([
     (0, typeorm_1.Entity)({ name: 'users' })
 ], UserEntity);

@@ -8,10 +8,15 @@ export declare class MeterReadingEntity {
     meter: MeterEntity;
     userId: string;
     user: UserEntity;
+    enteredByUserId?: string | null;
+    enteredBy?: UserEntity | null;
     readingValue: number;
+    previousReadingValue?: number | null;
+    usageKwh?: number | null;
     readingDate: Date;
     source: ReadingSource;
     status: ReadingStatus;
+    notes?: string | null;
     imageUrl?: string | null;
     createdAt: Date;
     updatedAt: Date;

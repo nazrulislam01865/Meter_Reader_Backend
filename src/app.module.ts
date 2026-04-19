@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module';
 import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { UsersModule } from './users/user.module';
 import { AuthModule } from './auth/auth.module';
+import { ManagerModule } from './managers/manager.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { AuthModule } from './auth/auth.module';
     }),
     AdminModule,
     UsersModule,
-    AuthModule
+    AuthModule,
+    ManagerModule
 
   
   ],
