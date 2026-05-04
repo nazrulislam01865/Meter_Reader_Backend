@@ -8,7 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { UsersModule } from './users/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ManagerModule } from './managers/manager.module';
-import { SupabaseModule } from './supabase/supabase.module';
 
 @Module({
   imports: [
@@ -33,7 +32,6 @@ import { SupabaseModule } from './supabase/supabase.module';
     UsersModule,
     AuthModule,
     ManagerModule,
-    SupabaseModule
 
   
   ],

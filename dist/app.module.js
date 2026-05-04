@@ -16,6 +16,7 @@ const typeorm_module_1 = require("@nestjs/typeorm/dist/typeorm.module");
 const user_module_1 = require("./users/user.module");
 const auth_module_1 = require("./auth/auth.module");
 const manager_module_1 = require("./managers/manager.module");
+const supabase_module_1 = require("./supabase/supabase.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -41,7 +42,8 @@ exports.AppModule = AppModule = __decorate([
             admin_module_1.AdminModule,
             user_module_1.UsersModule,
             auth_module_1.AuthModule,
-            manager_module_1.ManagerModule
+            manager_module_1.ManagerModule,
+            supabase_module_1.SupabaseModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
